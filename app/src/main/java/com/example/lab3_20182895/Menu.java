@@ -27,7 +27,6 @@ public class Menu extends AppCompatActivity {
         menuBinding=MenuBinding.inflate(getLayoutInflater());
         setContentView(menuBinding.getRoot());
 
-        Toast.makeText(this, "Tiene internet: " + tengoInternet(), Toast.LENGTH_LONG).show();
 
         menuBinding.buttonVisualizar.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -39,16 +38,7 @@ public class Menu extends AppCompatActivity {
         });
     }
 
-    public boolean tengoInternet() {
-        ConnectivityManager manager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
 
-        NetworkInfo activeNetworkInfo = manager.getActiveNetworkInfo();
-        boolean tieneInternet = activeNetworkInfo != null && activeNetworkInfo.isConnected();
-
-        Log.d("msg-test-internet", "Internet: " + tieneInternet);
-
-        return tieneInternet;
-    }
 
 
 }
