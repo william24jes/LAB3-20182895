@@ -8,10 +8,12 @@ import android.util.Log;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.ViewModelProvider;
 
 import com.example.lab3_20182895.databinding.ContadorPrimosBinding;
 import com.example.lab3_20182895.dto.Profile;
 import com.example.lab3_20182895.services.NumeroPrimosService;
+import com.example.lab3_20182895.viewmodel.ContadorPrimoViewModel;
 
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -34,25 +36,29 @@ public class ContadorPrimos extends AppCompatActivity {
         contadorPrimosBinding = ContadorPrimosBinding.inflate(getLayoutInflater());
         setContentView(contadorPrimosBinding.getRoot());
 
+        ApplicationThreads application = (ApplicationThreads) getApplication();
+        ExecutorService executorService = application.executorService;
 
+        ContadorPrimoViewModel contadorPrimoViewModel =
+                new ViewModelProvider(ContadorPrimos.this).get(ContadorPrimoViewModel.class);
+
+        contadorPrimoViewModel.getContador().observe(this, contador -> {
+            //aquí o2
+            contadorPrimosBinding.cont.setText(String.valueOf(contador));
+        });
 
         contadorPrimosBinding.Pausar.setOnClickListener(view -> {
-            ApplicationThreads application = (ApplicationThreads) getApplication();
-            ExecutorService executorService = application.executorService;
 
 
-            executorService.execute(new Runnable() {
-                @Override
-                public void run() {
-                    int contador = 1;
-                    while (contador <= 10) {
-                        contadorPrimosBinding.cont.setText(String.valueOf(contador));
-                        contador++;
-                        try {
-                            Thread.sleep(1000);
-                        } catch (InterruptedException e) {
-                            throw new RuntimeException(e);
-                        }
+            //es un hilo en background
+            executorService.execute(() -> {
+                for (int i = 1; i <= 10; i++) {
+                    contadorPrimoViewModel.getContador().postValue(i); // o1
+                    Log.d("msg-test", "i: " + i);
+                    try {
+                        Thread.sleep(1000);
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
                     }
                 }
             });
@@ -68,7 +74,7 @@ public class ContadorPrimos extends AppCompatActivity {
                 .build()
                 .create(NumeroPrimosService.class);
 
-        fetchPrimos();
+        //fetchPrimos();
     }
 
 
