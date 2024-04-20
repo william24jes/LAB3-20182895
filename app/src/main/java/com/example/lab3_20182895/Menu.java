@@ -1,8 +1,13 @@
 package com.example.lab3_20182895;
 
+import android.content.Context;
 import android.content.Intent;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
+import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
@@ -22,6 +27,8 @@ public class Menu extends AppCompatActivity {
         menuBinding=MenuBinding.inflate(getLayoutInflater());
         setContentView(menuBinding.getRoot());
 
+        Toast.makeText(this, "Tiene internet: " + tengoInternet(), Toast.LENGTH_LONG).show();
+
         menuBinding.buttonVisualizar.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -30,9 +37,17 @@ public class Menu extends AppCompatActivity {
                 startActivity(intent);
             }
         });
+    }
 
+    public boolean tengoInternet() {
+        ConnectivityManager manager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
 
+        NetworkInfo activeNetworkInfo = manager.getActiveNetworkInfo();
+        boolean tieneInternet = activeNetworkInfo != null && activeNetworkInfo.isConnected();
 
+        Log.d("msg-test-internet", "Internet: " + tieneInternet);
+
+        return tieneInternet;
     }
 
 
