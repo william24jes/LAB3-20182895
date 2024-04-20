@@ -53,6 +53,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="32dp"
         android:backgroundTint="#5FBC45"
+        android:clickable="true"
         android:text="Visualizar"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.946"

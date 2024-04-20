@@ -1,6 +1,8 @@
 package com.example.lab3_20182895;
 
+import android.content.Intent;
 import android.os.Bundle;
+import android.view.View;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
@@ -19,5 +21,19 @@ public class Menu extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         menuBinding=MenuBinding.inflate(getLayoutInflater());
         setContentView(menuBinding.getRoot());
+
+        menuBinding.buttonVisualizar.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // Iniciar la actividad ContadorPrimos
+                Intent intent = new Intent(Menu.this, ContadorPrimos.class);
+                startActivity(intent);
+            }
+        });
+
+
+
     }
+
+
 }
