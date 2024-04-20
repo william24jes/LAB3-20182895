@@ -14,6 +14,7 @@ import com.example.lab3_20182895.dto.Profile;
 import com.example.lab3_20182895.services.NumeroPrimosService;
 
 import java.util.List;
+import java.util.concurrent.ExecutorService;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -30,12 +31,36 @@ public class ContadorPrimos extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        contadorPrimosBinding=ContadorPrimosBinding.inflate(getLayoutInflater());
+        contadorPrimosBinding = ContadorPrimosBinding.inflate(getLayoutInflater());
         setContentView(contadorPrimosBinding.getRoot());
 
 
-        Toast.makeText(this, "Tiene internet: " + tengoInternet(), Toast.LENGTH_LONG).show();
 
+        contadorPrimosBinding.Pausar.setOnClickListener(view -> {
+            ApplicationThreads application = (ApplicationThreads) getApplication();
+            ExecutorService executorService = application.executorService;
+
+
+            executorService.execute(new Runnable() {
+                @Override
+                public void run() {
+                    int contador = 1;
+                    while (contador <= 10) {
+                        contadorPrimosBinding.cont.setText(String.valueOf(contador));
+                        contador++;
+                        try {
+                            Thread.sleep(1000);
+                        } catch (InterruptedException e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
+                }
+            });
+
+
+        });
+
+        Toast.makeText(this, "Tiene internet: " + tengoInternet(), Toast.LENGTH_LONG).show();
 
         numeroPrimosService = new Retrofit.Builder()
                 .baseUrl("https://prime-number-api.onrender.com")
@@ -47,6 +72,7 @@ public class ContadorPrimos extends AppCompatActivity {
     }
 
 
+
     public void fetchPrimos(){
         if(tengoInternet()){
             numeroPrimosService.getPrimeNumbers().enqueue(new Callback<List<Profile>>() {
@@ -54,10 +80,24 @@ public class ContadorPrimos extends AppCompatActivity {
                 public void onResponse(Call<List<Profile>> call, Response<List<Profile>> response) {
                     if(response.isSuccessful()){
                         List<Profile> profileList = response.body();
-                        for(Profile c : profileList){
-                            Log.d("msg-test-ws-comments","id: "
-                                    + c.getOrder() + " | body: " + c.getNumber());
-                        }
+
+                        contadorPrimosBinding.cont.setText(profileList.get(0).getNumber());
+
+
+
+                        /*for(Profile c : profileList){
+
+                            try {
+                                Log.d("msg-test-ws-comments","id: "
+                                        + c.getOrder() + " | body: " + c.getNumber());
+                                Thread.sleep(1000);
+                            } catch (InterruptedException e) {
+                                throw new RuntimeException(e);
+                            }*/
+
+
+
+
                     }
                 }
 
