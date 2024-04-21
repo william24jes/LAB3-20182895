@@ -13,6 +13,7 @@ import androidx.lifecycle.ViewModelProvider;
 import com.example.lab3_20182895.databinding.ContadorPrimosBinding;
 import com.example.lab3_20182895.dto.Profile;
 import com.example.lab3_20182895.services.NumeroPrimosService;
+import com.example.lab3_20182895.viewmodel.ButtonViewModel;
 import com.example.lab3_20182895.viewmodel.ContadorPrimoViewModel;
 
 import java.util.List;
@@ -35,7 +36,8 @@ public class ContadorPrimos extends AppCompatActivity {
     boolean verificarPrimeraVezAD = true;
 
     boolean verificarDescenso = true; // Descendiente=true; Ascendente=false
-    int contadorVerificador=0;
+    int contadorVerificador = 0;
+    int ordenGuardar =0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,8 +57,8 @@ public class ContadorPrimos extends AppCompatActivity {
 
         ApplicationThreads application = (ApplicationThreads) getApplication();
         ExecutorService executorService = application.executorService;
-        ExecutorService executorService2 = application.executorService;
 
+        //ContadorVewModel
         ContadorPrimoViewModel contadorPrimoViewModel =
                 new ViewModelProvider(ContadorPrimos.this).get(ContadorPrimoViewModel.class);
 
@@ -64,42 +66,113 @@ public class ContadorPrimos extends AppCompatActivity {
             //aquí o2
             contadorPrimosBinding.cont.setText(String.valueOf(contador));
         });
+        //
+
+        //ButtonViewModel
+        ButtonViewModel buttonViewModel =
+                new ViewModelProvider(ContadorPrimos.this).get(ButtonViewModel.class);
+
+        buttonViewModel.getButton().observe(this, button -> {
+            //aquí o2
+            contadorPrimosBinding.Descender.setText(button);
+        });
+        //
 
         contadorPrimosBinding.Descender.setOnClickListener(view -> {
-            setContadorVerificador(getContadorVerificador()+1);
-            if (getContadorVerificador()%2!=0){
+
+            setContadorVerificador(getContadorVerificador() + 1);
+            if (getContadorVerificador() % 2 != 0) {
                 setVerificarDescenso(true);
-            }else {
+            } else {
                 setVerificarDescenso(false);
             }
 
-
-            if (isVerificarDescenso()==true){
+            if (isVerificarDescenso() == true) {
                 executorService.execute(() -> {
 
-                    for (int i = 0; i <= getListaDeProfile().size() - 1; i++) {
-                        if (isVerificarDescenso()==false){
+                    buttonViewModel.getButton().postValue("Descender");
+
+                    for (int i = getOrdenGuardar(); i <= getListaDeProfile().size() -(getListaDeProfile().size()-getOrdenGuardar()); i++) {
+                        if (isVerificarDescenso() == false) {
                             break;
                         }
-                        contadorPrimoViewModel.getContador().postValue(Integer.parseInt(getListaDeProfile().get(i).getNumber())); // o1
+                        contadorPrimoViewModel.getContador().postValue(Integer.parseInt(getListaDeProfile().get(getOrdenGuardar()).getNumber()));
+                        setOrdenGuardar(Integer.parseInt(getListaDeProfile().get(i).getOrder()));
+                        Log.d("msg-test-ws-post","id: " +getOrdenGuardar());
+                        if (getOrdenGuardar() == 998) {
 
+                                setContadorVerificador(getContadorVerificador() + 1);
+                                if (getContadorVerificador() % 2 != 0) {
+                                    setVerificarDescenso(true);
+                                } else {
+                                    setVerificarDescenso(false);
+                                }
+
+                                buttonViewModel.getButton().postValue("Ascender");
+
+                                for (int j = getOrdenGuardar(); j <= getListaDeProfile().size()  -(getListaDeProfile().size()-getOrdenGuardar()); j--) {
+                                    if (isVerificarDescenso() == true) {
+                                        break;
+                                    }
+                                    setOrdenGuardar(Integer.parseInt(getListaDeProfile().get(i).getOrder()));
+                                    contadorPrimoViewModel.getContador().postValue(Integer.parseInt(getListaDeProfile().get(getOrdenGuardar()).getNumber())); // o1
+
+                                    try {
+                                        Thread.sleep(1000);
+                                    } catch (InterruptedException e) {
+                                        throw new RuntimeException(e);
+                                    }
+                                }
+
+                                //
+                        }
                         try {
                             Thread.sleep(1000);
                         } catch (InterruptedException e) {
                             throw new RuntimeException(e);
                         }
                     }
+
                 });
-            }else{
+            } else {
 
                 executorService.execute(() -> {
 
-                    for (int i = 998; i <= getListaDeProfile().size() - 1; i--) {
-                        if (isVerificarDescenso()==true){
+                    buttonViewModel.getButton().postValue("Ascender");
+
+                    for (int i = getOrdenGuardar(); i <= getListaDeProfile().size() -(getListaDeProfile().size()-getOrdenGuardar()); i--) {
+                        if (isVerificarDescenso() == true) {
                             break;
                         }
-                        contadorPrimoViewModel.getContador().postValue(Integer.parseInt(getListaDeProfile().get(i).getNumber())); // o1
+                        contadorPrimoViewModel.getContador().postValue(Integer.parseInt(getListaDeProfile().get(getOrdenGuardar()).getNumber())); // o1
+                        setOrdenGuardar(Integer.parseInt(getListaDeProfile().get(i).getOrder()));
+                        Log.d("msg-test-ws-post","id: " +getOrdenGuardar());
+                        if (getOrdenGuardar() == 0) {
+                            setContadorVerificador(getContadorVerificador() + 1);
+                            if (getContadorVerificador() % 2 != 0) {
+                                setVerificarDescenso(true);
+                            } else {
+                                setVerificarDescenso(false);
+                            }
 
+                            buttonViewModel.getButton().postValue("Descender");
+
+                            for (int j = getOrdenGuardar(); j <= getListaDeProfile().size() -(getListaDeProfile().size()-getOrdenGuardar()); j++) {
+                                if (isVerificarDescenso() == false) {
+                                    break;
+                                }
+                                contadorPrimoViewModel.getContador().postValue(Integer.parseInt(getListaDeProfile().get(getOrdenGuardar()).getNumber())); // o1
+                                setOrdenGuardar(Integer.parseInt(getListaDeProfile().get(i).getOrder()));
+
+                                try {
+                                    Thread.sleep(1000);
+                                } catch (InterruptedException e) {
+                                    throw new RuntimeException(e);
+                                }
+                            }
+
+
+                        }
                         try {
                             Thread.sleep(1000);
                         } catch (InterruptedException e) {
@@ -116,6 +189,7 @@ public class ContadorPrimos extends AppCompatActivity {
     }
 
 
+
     public void fetchPrimos() {
         if (tengoInternet()) {
             numeroPrimosService.getPrimeNumbers().enqueue(new Callback<List<Profile>>() {
@@ -125,24 +199,6 @@ public class ContadorPrimos extends AppCompatActivity {
                         List<Profile> profileList = response.body();
 
                         setListaDeProfile(profileList);
-
-                        /*contadorPrimosBinding.cont.setText(profileList.get(0).getNumber());
-
-
-
-                        for(Profile c : profileList){
-
-                            try {
-                                Log.d("msg-test-ws-comments","id: "
-                                        + c.getOrder() + " | body: " + c.getNumber());
-                                Thread.sleep(1000);
-                            } catch (InterruptedException e) {
-                                throw new RuntimeException(e);
-                            }
-
-
-
-                        }*/
                     }
                 }
 
@@ -196,4 +252,13 @@ public class ContadorPrimos extends AppCompatActivity {
     public void setContadorVerificador(int contadorVerificador) {
         this.contadorVerificador = contadorVerificador;
     }
+
+    public int getOrdenGuardar() {
+        return ordenGuardar;
+    }
+
+    public void setOrdenGuardar(int ordenGuardar) {
+        this.ordenGuardar = ordenGuardar;
+    }
+
 }
