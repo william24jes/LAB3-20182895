@@ -5,6 +5,7 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -13,7 +14,8 @@ import androidx.lifecycle.ViewModelProvider;
 import com.example.lab3_20182895.databinding.ContadorPrimosBinding;
 import com.example.lab3_20182895.dto.Profile;
 import com.example.lab3_20182895.services.NumeroPrimosService;
-import com.example.lab3_20182895.viewmodel.ButtonViewModel;
+import com.example.lab3_20182895.viewmodel.ButtonAscensoDescensoViewModel;
+import com.example.lab3_20182895.viewmodel.ButtonPausarReiniciarViewModel;
 import com.example.lab3_20182895.viewmodel.ContadorPrimoViewModel;
 
 import java.util.List;
@@ -34,6 +36,7 @@ public class ContadorPrimos extends AppCompatActivity {
     List<Profile> listaDeProfile;
 
     boolean verificarDescenso = true; // Descendiente=true; Ascendente=false
+    boolean verificarPausa = false; // Con pausa = true; sin pausa= false
     int ordenGuardar = 0;
 
     ExecutorService executorServiceAscender = Executors.newSingleThreadExecutor();
@@ -63,11 +66,19 @@ public class ContadorPrimos extends AppCompatActivity {
             contadorPrimosBinding.cont.setText(String.valueOf(contador));
         });
 
-        //ButtonViewModel
-        ButtonViewModel buttonViewModel =
-                new ViewModelProvider(ContadorPrimos.this).get(ButtonViewModel.class);
+        //ButtonAscensoDescensoViewModel
+        ButtonAscensoDescensoViewModel buttonAscensoDescensoViewModel =
+                new ViewModelProvider(ContadorPrimos.this).get(ButtonAscensoDescensoViewModel.class);
 
-        buttonViewModel.getButton().observe(this, button -> {
+        buttonAscensoDescensoViewModel.getButton().observe(this, button -> {
+            contadorPrimosBinding.Descender.setText(button);
+        });
+
+        //ButtonPausarReiniciarViewModel
+        ButtonPausarReiniciarViewModel buttonPausarReiniciarViewModel =
+                new ViewModelProvider(ContadorPrimos.this).get(ButtonPausarReiniciarViewModel.class);
+
+        buttonAscensoDescensoViewModel.getButton().observe(this, button -> {
             contadorPrimosBinding.Descender.setText(button);
         });
 
@@ -80,13 +91,25 @@ public class ContadorPrimos extends AppCompatActivity {
 
             if (verificarDescenso) {
 
-                iniciarDescensoAutomatico(executorServiceDescender,executorServiceAscender, isVerificarDescenso(),  contadorPrimoViewModel,buttonViewModel);
+                iniciarDescensoAutomatico(executorServiceDescender,executorServiceAscender, isVerificarDescenso(),  contadorPrimoViewModel, buttonAscensoDescensoViewModel);
 
             } else {
 
-                iniciarAscensoAutomatico(executorServiceAscender, executorServiceDescender, isVerificarDescenso(), contadorPrimoViewModel,buttonViewModel);
+                iniciarAscensoAutomatico(executorServiceAscender, executorServiceDescender, isVerificarDescenso(), contadorPrimoViewModel, buttonAscensoDescensoViewModel);
             }
         });
+
+        contadorPrimosBinding.Pausar.setOnClickListener(view -> {
+            setVerificarPausa(!isVerificarPausa());
+            if (isVerificarPausa()) {
+                contadorPrimosBinding.Pausar.setText("Reiniciar");
+                contadorPrimosBinding.Descender.setVisibility(View.INVISIBLE);
+            } else {
+                contadorPrimosBinding.Pausar.setText("Pausar");
+                contadorPrimosBinding.Descender.setVisibility(View.VISIBLE);
+            }
+        });
+
     }
 
     public void fetchPrimos() {
@@ -116,11 +139,16 @@ public class ContadorPrimos extends AppCompatActivity {
         return tieneInternet;
     }
 
-    private void iniciarDescensoAutomatico(ExecutorService executorServiceDescender,ExecutorService executorServiceAscender, boolean verificarDescenso, ContadorPrimoViewModel contadorPrimoViewModel, ButtonViewModel buttonViewModel) {
-        buttonViewModel.getButton().postValue("Ascender");
+    private void iniciarDescensoAutomatico(ExecutorService executorServiceDescender,ExecutorService executorServiceAscender, boolean verificarDescenso, ContadorPrimoViewModel contadorPrimoViewModel, ButtonAscensoDescensoViewModel buttonAscensoDescensoViewModel) {
+        buttonAscensoDescensoViewModel.getButton().postValue("Ascender");
         executorServiceDescender.execute(() -> {
             for (int i = getOrdenGuardar(); i >= 0; i--) {
                 if (!isVerificarDescenso()) {
+                    break;
+                }
+
+                //Pausar
+                if (isVerificarPausa()==true) {
                     break;
                 }
                 int num = Integer.parseInt(listaDeProfile.get(i).getNumber());
@@ -128,7 +156,7 @@ public class ContadorPrimos extends AppCompatActivity {
                 setOrdenGuardar(i);
                 if (i == 0) {
                     setVerificarDescenso(false);
-                    iniciarAscensoAutomatico(executorServiceAscender, executorServiceDescender, false, contadorPrimoViewModel, buttonViewModel);
+                    iniciarAscensoAutomatico(executorServiceAscender, executorServiceDescender, false, contadorPrimoViewModel, buttonAscensoDescensoViewModel);
                 }
                 try {
                     Thread.sleep(10);
@@ -139,11 +167,16 @@ public class ContadorPrimos extends AppCompatActivity {
         });
     }
 
-    private void iniciarAscensoAutomatico(ExecutorService executorServiceAscender,ExecutorService executorServiceDescender ,boolean verificarDescenso, ContadorPrimoViewModel contadorPrimoViewModel, ButtonViewModel buttonViewModel) {
-        buttonViewModel.getButton().postValue("Descender");
+    private void iniciarAscensoAutomatico(ExecutorService executorServiceAscender,ExecutorService executorServiceDescender ,boolean verificarDescenso, ContadorPrimoViewModel contadorPrimoViewModel, ButtonAscensoDescensoViewModel buttonAscensoDescensoViewModel) {
+        buttonAscensoDescensoViewModel.getButton().postValue("Descender");
         executorServiceAscender.execute(() -> {
             for (int i = getOrdenGuardar(); i < listaDeProfile.size(); i++) {
                 if (isVerificarDescenso()) {
+                    break;
+                }
+
+                //Pausar
+                if (isVerificarPausa()==true) {
                     break;
                 }
                 int num = Integer.parseInt(listaDeProfile.get(i).getNumber());
@@ -151,7 +184,7 @@ public class ContadorPrimos extends AppCompatActivity {
                 setOrdenGuardar(i);
                 if (i == listaDeProfile.size() - 1) {
                     setVerificarDescenso(true);
-                    iniciarDescensoAutomatico(executorServiceDescender, executorServiceAscender, true, contadorPrimoViewModel, buttonViewModel);
+                    iniciarDescensoAutomatico(executorServiceDescender, executorServiceAscender, true, contadorPrimoViewModel, buttonAscensoDescensoViewModel);
                 }
                 try {
                     Thread.sleep(10);
@@ -178,5 +211,11 @@ public class ContadorPrimos extends AppCompatActivity {
         this.ordenGuardar = ordenGuardar;
     }
 
+    public boolean isVerificarPausa() {
+        return verificarPausa;
+    }
 
+    public void setVerificarPausa(boolean verificarPausa) {
+        this.verificarPausa = verificarPausa;
+    }
 }
