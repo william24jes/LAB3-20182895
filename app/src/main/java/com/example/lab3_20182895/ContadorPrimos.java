@@ -108,6 +108,7 @@ public class ContadorPrimos extends AppCompatActivity {
 
                 contadorPrimosBinding.actual.setText("Actualmente el contador está en pausa");
                 contadorPrimosBinding.Pausar.setText("Reiniciar");
+                setOrdenGuardar(0);
                 contadorPrimosBinding.Descender.setVisibility(View.INVISIBLE);
             } else {
                 contadorPrimosBinding.Pausar.setText("Pausar");
@@ -115,7 +116,33 @@ public class ContadorPrimos extends AppCompatActivity {
             }
         });
 
+        contadorPrimosBinding.Buscar.setOnClickListener(view -> {
+            // Obtener el número ingresado
+            int numero = Integer.parseInt(contadorPrimosBinding.orden.getText().toString());
+
+            // Establecer el orden de guardado
+            setOrdenGuardar(numero);
+
+            // Verificar si el contador está en descenso o no
+            if (!isVerificarDescenso()) {
+                setVerificarDescenso(true); // Si no está en descenso, establecerlo como tal
+            }
+
+            // Reiniciar la pausa
+            setVerificarDescenso(false);
+
+            // Iniciar el ascenso o descenso según el estado actual
+            if (verificarDescenso) {
+                iniciarDescensoAutomatico(executorServiceDescender, executorServiceAscender, textoActualViewModel, contadorPrimoViewModel, buttonAscensoDescensoViewModel);
+            } else {
+                iniciarAscensoAutomatico(executorServiceAscender, executorServiceDescender, textoActualViewModel, contadorPrimoViewModel, buttonAscensoDescensoViewModel);
+            }
+        });
+
+
     }
+
+
 
     public void fetchPrimos() {
         if (tengoInternet()) {
@@ -147,10 +174,12 @@ public class ContadorPrimos extends AppCompatActivity {
     private void iniciarDescensoAutomatico(ExecutorService executorServiceDescender,ExecutorService executorServiceAscender, TextoActualViewModel textoActualViewModel, ContadorPrimoViewModel contadorPrimoViewModel, ButtonAscensoDescensoViewModel buttonAscensoDescensoViewModel) {
         buttonAscensoDescensoViewModel.getButton().postValue("Ascender");
         executorServiceDescender.execute(() -> {
+
             for (int i = getOrdenGuardar(); i >= 0; i--) {
                 if (!isVerificarDescenso()) {
                     break;
                 }
+
 
                 //Pausar
                 if (isVerificarPausa()==true) {
@@ -164,7 +193,7 @@ public class ContadorPrimos extends AppCompatActivity {
                     iniciarAscensoAutomatico(executorServiceAscender, executorServiceDescender, textoActualViewModel, contadorPrimoViewModel, buttonAscensoDescensoViewModel);
                 }
                 try {
-                    Thread.sleep(10);
+                    Thread.sleep(1000);
                 } catch (InterruptedException e) {
                     throw new RuntimeException(e);
                 }
@@ -176,6 +205,7 @@ public class ContadorPrimos extends AppCompatActivity {
         buttonAscensoDescensoViewModel.getButton().postValue("Descender");
         executorServiceAscender.execute(() -> {
             for (int i = getOrdenGuardar(); i < listaDeProfile.size(); i++) {
+
                 if (isVerificarDescenso()) {
                     break;
                 }
@@ -192,7 +222,7 @@ public class ContadorPrimos extends AppCompatActivity {
                     iniciarDescensoAutomatico(executorServiceDescender, executorServiceAscender, textoActualViewModel, contadorPrimoViewModel, buttonAscensoDescensoViewModel);
                 }
                 try {
-                    Thread.sleep(10);
+                    Thread.sleep(1000);
                 } catch (InterruptedException e) {
                     throw new RuntimeException(e);
                 }
