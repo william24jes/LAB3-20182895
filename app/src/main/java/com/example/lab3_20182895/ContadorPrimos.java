@@ -30,41 +30,18 @@ public class ContadorPrimos extends AppCompatActivity {
     ContadorPrimosBinding contadorPrimosBinding;
     NumeroPrimosService numeroPrimosService;
 
+    List<Profile> listaDeProfile;
+
+    boolean verificarPrimeraVezAD = true;
+
+    boolean verificarDescenso = true; // Descendiente=true; Ascendente=false
+    int contadorVerificador=0;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         contadorPrimosBinding = ContadorPrimosBinding.inflate(getLayoutInflater());
         setContentView(contadorPrimosBinding.getRoot());
-
-        ApplicationThreads application = (ApplicationThreads) getApplication();
-        ExecutorService executorService = application.executorService;
-
-        ContadorPrimoViewModel contadorPrimoViewModel =
-                new ViewModelProvider(ContadorPrimos.this).get(ContadorPrimoViewModel.class);
-
-        contadorPrimoViewModel.getContador().observe(this, contador -> {
-            //aquí o2
-            contadorPrimosBinding.cont.setText(String.valueOf(contador));
-        });
-
-        contadorPrimosBinding.Pausar.setOnClickListener(view -> {
-
-
-            //es un hilo en background
-            executorService.execute(() -> {
-                for (int i = 1; i <= 10; i++) {
-                    contadorPrimoViewModel.getContador().postValue(i); // o1
-                    Log.d("msg-test", "i: " + i);
-                    try {
-                        Thread.sleep(1000);
-                    } catch (InterruptedException e) {
-                        throw new RuntimeException(e);
-                    }
-                }
-            });
-
-
-        });
 
         Toast.makeText(this, "Tiene internet: " + tengoInternet(), Toast.LENGTH_LONG).show();
 
@@ -74,24 +51,86 @@ public class ContadorPrimos extends AppCompatActivity {
                 .build()
                 .create(NumeroPrimosService.class);
 
-        //fetchPrimos();
+        fetchPrimos();
+
+        ApplicationThreads application = (ApplicationThreads) getApplication();
+        ExecutorService executorService = application.executorService;
+        ExecutorService executorService2 = application.executorService;
+
+        ContadorPrimoViewModel contadorPrimoViewModel =
+                new ViewModelProvider(ContadorPrimos.this).get(ContadorPrimoViewModel.class);
+
+        contadorPrimoViewModel.getContador().observe(this, contador -> {
+            //aquí o2
+            contadorPrimosBinding.cont.setText(String.valueOf(contador));
+        });
+
+        contadorPrimosBinding.Descender.setOnClickListener(view -> {
+            setContadorVerificador(getContadorVerificador()+1);
+            if (getContadorVerificador()%2!=0){
+                setVerificarDescenso(true);
+            }else {
+                setVerificarDescenso(false);
+            }
+
+
+            if (isVerificarDescenso()==true){
+                executorService.execute(() -> {
+
+                    for (int i = 0; i <= getListaDeProfile().size() - 1; i++) {
+                        if (isVerificarDescenso()==false){
+                            break;
+                        }
+                        contadorPrimoViewModel.getContador().postValue(Integer.parseInt(getListaDeProfile().get(i).getNumber())); // o1
+
+                        try {
+                            Thread.sleep(1000);
+                        } catch (InterruptedException e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
+                });
+            }else{
+
+                executorService.execute(() -> {
+
+                    for (int i = 998; i <= getListaDeProfile().size() - 1; i--) {
+                        if (isVerificarDescenso()==true){
+                            break;
+                        }
+                        contadorPrimoViewModel.getContador().postValue(Integer.parseInt(getListaDeProfile().get(i).getNumber())); // o1
+
+                        try {
+                            Thread.sleep(1000);
+                        } catch (InterruptedException e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
+                });
+
+            }
+
+        });
+
+
     }
 
 
-
-    public void fetchPrimos(){
-        if(tengoInternet()){
+    public void fetchPrimos() {
+        if (tengoInternet()) {
             numeroPrimosService.getPrimeNumbers().enqueue(new Callback<List<Profile>>() {
                 @Override
                 public void onResponse(Call<List<Profile>> call, Response<List<Profile>> response) {
-                    if(response.isSuccessful()){
+                    if (response.isSuccessful()) {
                         List<Profile> profileList = response.body();
 
-                        contadorPrimosBinding.cont.setText(profileList.get(0).getNumber());
+                        setListaDeProfile(profileList);
+
+                        /*contadorPrimosBinding.cont.setText(profileList.get(0).getNumber());
 
 
 
-                        /*for(Profile c : profileList){
+                        for(Profile c : profileList){
 
                             try {
                                 Log.d("msg-test-ws-comments","id: "
@@ -99,11 +138,11 @@ public class ContadorPrimos extends AppCompatActivity {
                                 Thread.sleep(1000);
                             } catch (InterruptedException e) {
                                 throw new RuntimeException(e);
-                            }*/
+                            }
 
 
 
-
+                        }*/
                     }
                 }
 
@@ -124,5 +163,37 @@ public class ContadorPrimos extends AppCompatActivity {
         Log.d("msg-test-internet", "Internet: " + tieneInternet);
 
         return tieneInternet;
+    }
+
+    public List<Profile> getListaDeProfile() {
+        return listaDeProfile;
+    }
+
+    public void setListaDeProfile(List<Profile> listaDeProfile) {
+        this.listaDeProfile = listaDeProfile;
+    }
+
+    public boolean isVerificarPrimeraVezAD() {
+        return verificarPrimeraVezAD;
+    }
+
+    public void setVerificarPrimeraVezAD(boolean verificarPrimeraVezAD) {
+        this.verificarPrimeraVezAD = verificarPrimeraVezAD;
+    }
+
+    public boolean isVerificarDescenso() {
+        return verificarDescenso;
+    }
+
+    public void setVerificarDescenso(boolean verificarDescenso) {
+        this.verificarDescenso = verificarDescenso;
+    }
+
+    public int getContadorVerificador() {
+        return contadorVerificador;
+    }
+
+    public void setContadorVerificador(int contadorVerificador) {
+        this.contadorVerificador = contadorVerificador;
     }
 }
