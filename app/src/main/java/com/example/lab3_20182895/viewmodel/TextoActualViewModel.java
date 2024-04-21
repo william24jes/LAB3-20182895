@@ -7,7 +7,7 @@ public class TextoActualViewModel extends ViewModel {
 
     private final MutableLiveData<String> textoActual = new MutableLiveData<>();
 
-    public MutableLiveData<String> getButton() {
+    public MutableLiveData<String> gettextoActual() {
         return textoActual;
     }
 }

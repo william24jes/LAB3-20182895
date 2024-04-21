@@ -105,9 +105,11 @@
         android:id="@+id/divider4"
         android:layout_width="409dp"
         android:layout_height="1dp"
+        android:layout_marginTop="164dp"
         android:background="?android:attr/listDivider"
-        tools:layout_editor_absoluteX="1dp"
-        tools:layout_editor_absoluteY="370dp" />
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/divider2" />
 
     <Button
         android:id="@+id/Buscar"
@@ -124,9 +126,12 @@
     <com.google.android.material.textfield.TextInputEditText
         android:layout_width="198dp"
         android:layout_height="41dp"
+        android:layout_marginTop="48dp"
         android:hint="Orden del primo"
-        tools:layout_editor_absoluteX="39dp"
-        tools:layout_editor_absoluteY="398dp" />
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.183"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/actual" />
 
     <TextView
         android:id="@+id/actual"
