@@ -120,23 +120,29 @@ public class ContadorPrimos extends AppCompatActivity {
             // Obtener el número ingresado
             int numero = Integer.parseInt(contadorPrimosBinding.orden.getText().toString());
 
-            // Establecer el orden de guardado
-            setOrdenGuardar(numero);
+            if (numero < 1 || numero > 999) {
+                Toast.makeText(this, "El número debe estar entre 1 y 99", Toast.LENGTH_SHORT).show();
+            }else {
+                // Establecer el orden de guardado
+                setOrdenGuardar(numero);
 
-            // Verificar si el contador está en descenso o no
-            if (!isVerificarDescenso()) {
-                setVerificarDescenso(true);
+                // Verificar si el contador está en descenso o no
+                if (!isVerificarDescenso()) {
+                    setVerificarDescenso(true);
+                }
+
+                // Reiniciar la pausa
+                setVerificarDescenso(false);
+
+                // Iniciar el ascenso o descenso
+                if (verificarDescenso) {
+                    iniciarDescensoAutomatico(executorServiceDescender, executorServiceAscender, textoActualViewModel, contadorPrimoViewModel, buttonAscensoDescensoViewModel);
+                } else {
+                    iniciarAscensoAutomatico(executorServiceAscender, executorServiceDescender, textoActualViewModel, contadorPrimoViewModel, buttonAscensoDescensoViewModel);
+                }
             }
 
-            // Reiniciar la pausa
-            setVerificarDescenso(false);
 
-            // Iniciar el ascenso o descenso
-            if (verificarDescenso) {
-                iniciarDescensoAutomatico(executorServiceDescender, executorServiceAscender, textoActualViewModel, contadorPrimoViewModel, buttonAscensoDescensoViewModel);
-            } else {
-                iniciarAscensoAutomatico(executorServiceAscender, executorServiceDescender, textoActualViewModel, contadorPrimoViewModel, buttonAscensoDescensoViewModel);
-            }
         });
 
 
