@@ -49,7 +49,7 @@ public class ContadorPrimos extends AppCompatActivity {
         contadorPrimosBinding = ContadorPrimosBinding.inflate(getLayoutInflater());
         setContentView(contadorPrimosBinding.getRoot());
 
-        Toast.makeText(this, "Tiene internet: " + tengoInternet(), Toast.LENGTH_LONG).show();
+        Toast.makeText(this, "Tiene internet: "+ tengoInternet()+"\nVista del Contador de Primos", Toast.LENGTH_LONG).show();
 
         numeroPrimosService = new Retrofit.Builder()
                 .baseUrl("https://prime-number-api.onrender.com")
@@ -125,13 +125,13 @@ public class ContadorPrimos extends AppCompatActivity {
 
             // Verificar si el contador está en descenso o no
             if (!isVerificarDescenso()) {
-                setVerificarDescenso(true); // Si no está en descenso, establecerlo como tal
+                setVerificarDescenso(true);
             }
 
             // Reiniciar la pausa
             setVerificarDescenso(false);
 
-            // Iniciar el ascenso o descenso según el estado actual
+            // Iniciar el ascenso o descenso
             if (verificarDescenso) {
                 iniciarDescensoAutomatico(executorServiceDescender, executorServiceAscender, textoActualViewModel, contadorPrimoViewModel, buttonAscensoDescensoViewModel);
             } else {

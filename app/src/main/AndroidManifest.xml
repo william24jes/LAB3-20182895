@@ -29,7 +29,7 @@
             android:exported="true">
         </activity>
         <activity
-            android:name=".ContadorPrimos3"
+            android:name=".Pelicula"
             android:exported="true">
         </activity>
 
